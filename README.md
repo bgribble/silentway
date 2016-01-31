@@ -18,30 +18,49 @@ standalone JACK client to sit between your signal-generating
 software and the audio interface that's connected to the Expert
 Sleepers device(s).
 
-## Silent Way basics 
+## Installation
+
+`This code uses "waf" as its build tool.
+
+```
+$ ./waf configure build install
+```
+
+
+## Run-time Configuration 
+
+The `silentway` client looks for a configuration file, called
+`~/.silentway` by default (a different file can be used via
+command-line arguments).  The config file defines what Expert
+Sleepers hardware you have and the way it is connected, so that
+the application's audio and MIDI ports can be set up correctly. 
+
+
+## Silent Way overview
 
 Here's what I have figured out about the Silent Way approach
 based on my reading of the source code and the Expert Sleepers
 documentation.  
 
-### Signal paths 
+### Signal acquisition
 
 Digital audio enters the Expert Sleepers domain via either ADAT
-or S/PDIF.  For ADAT connections, audio channels can be brought
-out directly to the front panel of an ES-3; those require no
-special software so I'm not concerned with them.  An ES-4/ES-40
-S/PDIF interface, or ES-3 channels sent to an ES-5 expansion
-interface treat the audio differently.
+(ES-3) or S/PDIF (ES-4, ES-40).  
+
+Audio channels can be brought out directly to the front panel of
+an ES-3; those require no special software so I'm not concerned
+with them.  An ES-4/ES-40 S/PDIF interface, or ES-3 channels sent
+to an ES-5 expansion interface treat the audio differently.
 
 A single stereo pair of 24-bit digital signals
 (either a S/PDIF connection or 2 channels of an ADAT connection)
-is treated as a 48-bit-wide audio stream running at the
+is treated as a 48-bit-wide data stream running at the
 specified interface rate (generally 44.1 kHz or 48 kHz).  
 
 This 48-bit-wide stream is then split into 6 8-bit streams at
 audio rate, with 3 on the 24 bits of channel 1 and 3 on the 24
-bits of channel 2.  Each of these streams appears on the 
-device (ES-5, ES-4, ES-40) as a 10-pin header marked "GT-1", 
+bits of channel 2.  Each of these streams appears on the PCB of
+the  device (ES-5, ES-4, ES-40) as a 10-pin header marked "GT-1",
 "GT-2", etc.  
 
 ### Expansion devices 
