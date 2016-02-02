@@ -196,15 +196,28 @@ iteration of representing a 12-bit value on an 8-bit channel.
 The advertising material says that the sample rate of each port a
 1/8th the audio rate, meaning that it takes 8 8-bit words to
 represent 4 12-bit samples.  That means 16 bits (2 words) for
-each 12-bit value, with 4 extras.  I'm guessing there's a 2-bit
-word sync and a 2-bit CV address, if we follow the format of the 
-ESX-8CV. 
+each 12-bit value, with 4 extras: 2 bits for sync and 2 bits for 
+DAC address.  Thanks to Expert Sleepers for confirming this 
+bit mapping in the support forum:
 
 Word 1
 ```
 Bit   Value  Meaning 
 0x80     1   This is the first word
-0x40    D7 
+0x40    A1   CV address bit 1 
+0x20    A0   CV address bit 0 
+0x10   D12   (data >> 7)
+0x08   D11
+0x04   D10
+0x02    D9
+0x01    D8
+```
+
+Word 2
+```
+Bit   Value  Meaning 
+0x80     0   This is the second word
+0x40    D7   (data & 0x7f) 
 0x20    D6   
 0x10    D5   
 0x08    D4
@@ -213,23 +226,5 @@ Bit   Value  Meaning
 0x01    D1 
 ```
 
-Word 2
-```
-Bit   Value  Meaning 
-0x80     0   This is the second word
-0x40    A1   CV address bit 1 
-0x20    A0   CV address bit 0 
-0x10   D12  
-0x08   D11
-0x04   D10
-0x02    D9
-0x01    D8
-```
-I don't have an ESX-4CV or source code to inspect, so this will
-have to remain a guess for the time being.  The bits could be in
-a different order.  I would guess that, like the ESX-8CV, frames
-are requested but not required to cycle through all 4 CV
-addresses in a cycle. 
-
-
-
+I would guess that, like the ESX-8CV, frames are requested but 
+not required to cycle through all 4 CV addresses in a cycle. 
