@@ -52,16 +52,30 @@ an ES-3; those require no special software so I'm not concerned
 with them.  An ES-4/ES-40 S/PDIF interface, or ES-3 channels sent
 to an ES-5 expansion interface treat the audio differently.
 
-A single stereo pair of 24-bit digital signals
-(either a S/PDIF connection or 2 channels of an ADAT connection)
-is treated as a 48-bit-wide data stream running at the
+A single stereo pair of  digital signals (either a stereo 20-bit
+S/PDIF connection or 2 channels of a 24-bit ADAT connection) is
+treated as a 40- or 48-bit-wide data stream running at the
 specified interface rate (generally 44.1 kHz or 48 kHz).  
 
-This 48-bit-wide stream is then split into 6 8-bit streams at
-audio rate, with 3 on the 24 bits of channel 1 and 3 on the 24
-bits of channel 2.  Each of these streams appears on the PCB of
-the  device (ES-5, ES-4, ES-40) as a 10-pin header marked "GT-1",
+### Stream splitting
+
+The 40- or 48-bit stream is then split into 5 or 6 8-bit streams
+at audio rate. Each of these streams appears on the PCB of the
+device (ES-5, ES-4, ES-40) as a 10-pin header marked "GT-1",
 "GT-2", etc.  
+
+For the 48-bit stream from an ES-3 into an ES-5 expansion
+connector, each 24-bit word is split into 3 8-bit chunks.
+Channels 1, 2, and 3 are on the left channel, while 4, 5, and 6
+are on the right.
+
+For the 40-bit stream from an ES-4 or ES-40, channels 1 and 2 are
+unpacked from the highest 16 bits of the left input channel,
+channels 3 and 4 are unpacked from the highest 16 bits of the
+right input channel, and channel 5 is assembled from the lowest 4
+bits of each (lowest 4 bits of left channel becomes highest 4
+bits of channel 5, lowest 4 bits of right becomes lowest 4 bits of
+5).
 
 ### Expansion devices 
 
@@ -83,19 +97,30 @@ devices to produce gate or CV outputs:
 
 ### Audio to expansion ports 
 
-Each 24-bit digital audio signal is split into 3 8-bit segments.  
-
+**ES-3 --> ES-5**: Each 24-bit digital audio signal is split into
+3 8-bit segments.  
 ```
-Left channel 
-
- 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21 22 23 24  
-[1][1][1][1][1][1][1][1][2][2][2][2][2][2][2][2][3][3][3][3][3][3][3][3]
-
-Right channel 
-
- 1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21 22 23 24  
-[4][4][4][4][4][4][4][4][5][5][5][5][5][5][5][5][6][6][6][6][6][6][6][6]
+Bitmask (L R)       Channel 
+0xff0000 0x000000   1
+0x00ff00 0x000000   2
+0x0000ff 0x000000   3
+0x000000 0xff0000   4
+0x000000 0x00ff00   5
+0x000000 0x0000ff   6
 ```
+
+**ES-4/ES-40**:  Five channels are split across 40 bits (S/PDIF
+values arrive as 24-bit words in most systems, with the lower 4
+bits always 0):
+```
+Bitmask (L R)       Channel 
+0xff0000 0x000000   1
+0x00ff00 0x000000   2
+0x000000 0xff0000   3
+0x000000 0x00ff00   4
+0x0000f0 0x0000f0   5
+```
+
 
 ### Expansion port to ESX-8GT 
 
