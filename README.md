@@ -13,7 +13,7 @@ Luckily the nice folks at Expert Sleepers pointed me to the code
 of a Pure Data external implementing the multiplexing:
 https://github.com/expertsleepersltd/externals
 
-Based on the algorithms in that code, I'm implmenting a
+Based on the algorithms in that code, I'm implementing a
 standalone JACK client to sit between your signal-generating
 software and the audio interface that's connected to the Expert
 Sleepers device(s).
@@ -35,6 +35,17 @@ command-line arguments).  The config file defines what Expert
 Sleepers hardware you have and the way it is connected, so that
 the application's audio and MIDI ports can be set up correctly. 
 
+```
+[silentway]             # global options
+interface=es-5          # valid values: es-4, es-5, es-40
+
+[gt_1]                  # first expansion port 
+device=esx-8cv          # valid values: esx-8gt, esx-8cv, esx-4cv, esx-8md 
+port_0=signal           # default is an audio input converted to CV
+port_1=midi(1, cc1)     # use midi channel 1 CC1 as the signal source 
+port_2=midi(2, noteNum) # use midi channel 1 NoteOn note numbers
+port_3=midi(2, noteOn)  # use midi channel 1 NoteOn as a gate 
+```
 
 ## Silent Way overview
 
