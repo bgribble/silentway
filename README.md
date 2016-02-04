@@ -18,6 +18,13 @@ standalone JACK client to sit between your signal-generating
 software and the audio interface that's connected to the Expert
 Sleepers device(s).
 
+### Note: It's not ready yet
+
+I doubt that anyone will come across this repo for a while, 
+but in case you do: I'll remove this text when I have something 
+working.  I'm still implementing, fleshing out this document,
+and just pushing to Github in case I spill coffee on my laptop.
+
 ## Installation
 
 `This code uses "waf" as its build tool.
