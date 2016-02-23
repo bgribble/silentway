@@ -7,24 +7,26 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <semaphore.h>
-
-#include "mfp_dsp.h"
+#include <argp.h>
 
 
 typedef enum {
     NC_PORT, 
     GT8_PORT,
+    MD8_PORT,
     CV4_PORT,
     CV8_PORT
 } sway_port_type_t;
 
 typedef struct { 
-    jack_client_t client;
+    jack_client_t * client;
+    
     GArray * input_ports;
     GArray * output_ports; 
 } sway_ctxt;
 
 typedef struct { 
+
     sway_port_type_t ports[6];
 } sway_ports;
 
@@ -32,7 +34,7 @@ typedef struct {
 static int
 process_cb (jack_nframes_t nframes, void * ctxt_arg)
 {
-    sway_ctxt * ctxt = (mfp_context *)ctxt_arg;
+    sway_ctxt * ctxt = (sway_ctxt *)ctxt_arg;
 
     /* work ! */
     printf("-- process callback --");
@@ -41,7 +43,7 @@ process_cb (jack_nframes_t nframes, void * ctxt_arg)
 }
 
     
-    static int
+static int
 shutdown_cb(void * arg) 
 {
     printf("Called shutdown_cb, exiting.\n");
@@ -105,18 +107,27 @@ sway_jack_startup(char * client_name, sway_ports * portinfo)
     return ctxt;
 
 }
+const char * argp_program_name = "silentway";
+const char * argp_program_version = "silentway v0.01";
+const char * argp_program_bug_address = "grib@billgribble.com";
 
+static char doc [] = "A command-line Silent Way translator";
 
 int
 main(int argc, char ** argv) 
 {
     /* parse command line args */
+    static struct argp argp = { 0, 0, 0, doc };
+    argp_parse(&argp, argc, argv, 0, 0, 0);
+
+    const char * conf_file = "sway.conf";
 
     /* read config file */ 
+    GKeyFile * config = sway_load_config(conf_file);
 
     /* initialize JACK */
 
-    sway_ctxt * ctxt = sway_jack_startup();
+    sway_ctxt * ctxt = sway_jack_startup("silentway", config);
 
     /* wait forever */
     sleep(-1);

@@ -46,12 +46,12 @@ the application's audio and MIDI ports can be set up correctly.
 [silentway]             # global options
 interface=es-5          # valid values: es-4, es-5, es-40
 
-[gt_1]                  # first expansion port 
+[GT1]                   # first expansion port 
 device=esx-8cv          # valid values: esx-8gt, esx-8cv, esx-4cv, esx-8md 
 port_0=signal           # default is an audio input converted to CV
 port_1=midi(1, cc1)     # use midi channel 1 CC1 as the signal source 
-port_2=midi(2, noteNum) # use midi channel 1 NoteOn note numbers
-port_3=midi(2, noteOn)  # use midi channel 1 NoteOn as a gate 
+port_2=midi(2, noteNum) # use midi channel 2 NoteOn note numbers
+port_3=midi(2, noteOn)  # use midi channel 2 NoteOn as a gate 
 ```
 
 ## Silent Way overview
@@ -79,8 +79,8 @@ specified interface rate (generally 44.1 kHz or 48 kHz).
 
 The 40- or 48-bit stream is then split into 5 or 6 8-bit streams
 at audio rate. Each of these streams appears on the PCB of the
-device (ES-5, ES-4, ES-40) as a 10-pin header marked "GT-1",
-"GT-2", etc.  
+device (ES-5, ES-4, ES-40) as a 10-pin header marked "GT1",
+"GT2", etc.  
 
 For the 48-bit stream from an ES-3 into an ES-5 expansion
 connector, each 24-bit word is split into 3 8-bit chunks.
@@ -108,8 +108,9 @@ devices to produce gate or CV outputs:
    a variable number of 12-bit CV signals (1-8) onto one 
    8-bit connection at a sample rate dependent on the number 
    of connections
- * ESX-8MD generates MIDI/DIN sync signals, I'm not sure how 
-   the connection works 
+ * ESX-8MD breaks out 8 1-bit serial MIDI data streams just 
+   like an ESX-8GT but with different connectors and different
+   software 
 
 ## Encodings 
 
@@ -246,3 +247,46 @@ Bit   Value  Meaning
 
 I would guess that, like the ESX-8CV, frames are requested but 
 not required to cycle through all 4 CV addresses in a cycle. 
+
+### Expansion port to ESX-8MD 
+
+Each of the 8 MIDI DIN connectors on the ESX-8MD has just one
+data bit; that's the nature of MIDI's serial protocol.  So from
+an electrical and signal routing perspective, the ESX-8MD is
+basically the same thing as the ESX-8GT, just with bigger
+connectors.  
+
+The software is the biggest difference.  MIDI is a serial
+protocol operating at 31250 bits per second, whereas the
+audio-rate signals entering the ESX-8MD are 44100 or 48000 bits
+per second (for each port) and the MIDI device drivers at the
+operating system level treat it as a stream of 8-bit bytes going
+over a channel that's about 3100 bytes per second.  Reconciling
+this mishmash is what the Silent Way software does. 
+
+I've never seen the source code to the SW software, so I'm having
+to guess at how they make all this work, but it's not a huge
+leap. Basically we rely on the receiving MIDI device following
+the spec and just bit bang our signal to meet its timing
+expectations.  
+
+The key thing to note is that most serial devices use a
+word-oriented protocol with a fixed "idle line" condition,
+followed by a "start bit", followed by data and sometimes a "stop
+bit".  MIDI is no different.  The line is normally held in the
+"high" or "1" condition, then the start of a word (and the start
+of the timer for reading each bit) is indicated by the transition
+to the "0" start bit state. Every 32 microseconds after that the
+line is read to get the next bit. 
+
+So to fool a genuine MIDI device into reading our data, we just
+have to turn a stream of data bytes into a series of 320
+microsecond signals, where 10 bits of data (start + 8 payload +
+stop) are turned into 15 samples (at 44.1 kHz) or 16 samples (at
+48 kHz) by strategically repeating a bit to stretch out the
+timing to match the receiver's expectation. 
+
+
+
+
+
