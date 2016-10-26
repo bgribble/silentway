@@ -15,7 +15,6 @@ import waflib
 
 import os, os.path
 
-
 def git_version():
     import subprocess
 

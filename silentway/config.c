@@ -9,7 +9,8 @@ sway_load_config(const char * conffile)
     gboolean success; 
 
     success = g_key_file_load_from_file(
-        keyfile, conffile, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS
+        keyfile, conffile, G_KEY_FILE_KEEP_COMMENTS | G_KEY_FILE_KEEP_TRANSLATIONS,
+        NULL
     );
     if (success) {
         return keyfile;

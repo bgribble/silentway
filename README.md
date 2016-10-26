@@ -27,10 +27,20 @@ and just pushing to Github in case I spill coffee on my laptop.
 
 ## Installation
 
-`This code uses "waf" as its build tool.
+This code uses "waf" as its build tool.
 
 ```
 $ ./waf configure build install
+```
+
+I mostly develop on amd64 Debian Linux, so there are probably some 
+implicit assumptions about that.  
+
+For OSX users, I have at least been able to waf build with the following 
+packages brew-installed:
+
+```
+$ brew install jack glib argp-standalone
 ```
 
 
@@ -53,6 +63,42 @@ port_1=midi(1, cc1)     # use midi channel 1 CC1 as the signal source
 port_2=midi(2, noteNum) # use midi channel 2 NoteOn note numbers
 port_3=midi(2, noteOn)  # use midi channel 2 NoteOn as a gate 
 ```
+
+### Signal config options
+
+The range of the digital audio outputs are (-1, 1), with Expert Sleepers 
+hardware scaling this range to (-10V, 10V).  
+
+Ports that are of type `signal` can (optionally) specify a simple linear 
+calibration adjustment as `(offset, scale)`.  
+
+```
+   sig_out = (sig_in + offset) + scale
+```
+
+So, for example, if you want the signal range (-1,1) to be mapped onto a control 
+voltage from 0 to 5V, you would specify 
+
+```
+port_0=signal(1.0, 0.25)
+```
+
+### MIDI config options 
+
+MIDI inputs can be mapped to either CV voltages or gates.  The (required)
+parameters are provided as `(channel, source, transpose*, offset*, scale*)`. 
+Parameters marked with `*` may be omitted if there are no following parameters with 
+values. 
+
+Values for `source`: 
+
+ * CCs: `cc1, cc2, `
+ * Note number: `noteNum` (convert note number to 12TET CV)
+ * Note trigger: `noteOn` (convert note on to trigger)
+ * Note gate: `noteOnOff` (convert note on/off to gate)
+
+
+
 
 ## Silent Way overview
 
